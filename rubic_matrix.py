@@ -264,20 +264,25 @@ class RubicMatrix(object):
     def oritation(self, matrix):
         return (c_20_1 * matrix)
 
+    # TODO: ipmlement one solve method of rubic cube
+    # TODO: XYZ is a small space similar problem. It could help.
 
 
+def main():
+    f2 = "R'HR'HR2H'R'H'R'H'R2H"
+    # f3  = 'RR'
+    # f4 = "USSUSSUSSUSS"
+    # print(ef(f2).nonzero())
+    # print(ef(f2))
+    # print(ef(f3).nonzero())
+    # print(ef(f4).nonzero())
+    # print(ef("R'").nonzero())
+    s = RubicMatrix()
+    print("f2 position: %s" % (s.position(s.ef(f2))))
+    print("f2 oritation: %s" % (s.oritation(s.ef(f2))))
+    print("e1 position: %s" % (s.position(e1)))
+    print("f2 oritation: %s" % (s.oritation(e1)))
 
-f2 = "R'HR'HR2H'R'H'R'H'R2H"
-# f3  = 'RR'
-# f4 = "USSUSSUSSUSS"
-# print(ef(f2).nonzero())
-# print(ef(f2))
-# print(ef(f3).nonzero())
-# print(ef(f4).nonzero())
-# print(ef("R'").nonzero())
-s = RubicMatrix()
-print("f2 position: %s" % (s.position(s.ef(f2))))
-print("f2 oritation: %s" % (s.oritation(s.ef(f2))))
-print("e1 position: %s" % (s.position(e1)))
-print("f2 oritation: %s" % (s.oritation(e1)))
-# TODO: simple_show, deconpose
+
+if __name__ == '__main__':
+    main()

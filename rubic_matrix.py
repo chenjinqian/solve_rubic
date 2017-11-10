@@ -5,169 +5,153 @@
 
 
 # matrix represent  rubic state and try to solve the best path .
-import math
-import numpy  as np
-import scipy as sp
-
-
-BASE = [
-       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-]
-
-
-# up reverse basic-representatio
-Urb = [
-       [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-]
+import numpy as np
+# import scipy as sp
+import cmath
 
 
 def t(n):
-    import cmath
     return 1 * cmath.exp(1j * ((2/3.0) * cmath.pi * n))
+# TODO: use decimal here.
+a = t(1)
+b = t(2)
+c = 0
+d = -1
+BASE = [
+    [1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1],
+    ]
+# up reverse basic-representatio
+Ur_raw = [
+    [c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1],
+    ]
+Rr_raw = [
+    [1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, d, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, d, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b],
+    [c, c, c, c, c, c, c, c, c, c, c, c, b, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c],
+    ]
+Zr_raw = [
+    [c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c, c, c],
+    ]
+Yr_raw = [
+    [c, c, c, c, d, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, d, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, d, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, d, c, c, c, c, c, c, c, c, c, c, c],
+    [1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, d, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, d, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, d, c, c, c, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, d, c, c, c, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, a],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, b, c, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c, c, c],
+    [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b, c],
+    ]
 
-
-t1 = t(1)
-t2 = t(2)
-m = -1
-Rrb = [
-       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, m, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, m, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t(1), 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t(2)],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t(2), 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t(1), 0, 0, 0],
-]
-Zrb = [
-       [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-]
-Yrb = [
-       [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t2, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t1, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t2, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t1],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t1, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t2, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t1, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, t2, 0],
-]
-
-
-# a = np.arange(3*4*5).reshape(3,4,5)
-# b = np.arange(2*5*3).reshape(2,5,3)
-# ar = np.arange(3*4*5).reshape(5,4,3)
-# c = np.dot(a, b)
-# a = np.arange(3*4*5*6).reshape((3,4,5,6))
-# b = np.arange(3*4*5*6)[::-1].reshape((5,4,6,3))
-# np.dot(a, b)[2,3,2, 1,2,2]
-# m1 = np.matrix('1,2; 3,4')
-# e1 = np.matrix('1, 0; 0, 1')
-# e2 = np.matrix('0, 1; 1, 0')
-# e3 = np.matrix('0, 1j; -1j, 0')
 
 base = np.matrix(BASE)
-Y = np.matrix(Yrb)
+# basic operation define.
+Y = np.matrix(Yr_raw)
 Yr = Y * Y * Y
-Zr = np.matrix(Zrb)
+Zr = np.matrix(Zr_raw)
 Z = Zr * Zr * Zr
 Xr = Z * Y * Zr
 X = Xr * Xr * Xr
-#
-Ur = np.matrix(Urb)
+Ur = np.matrix(Ur_raw)
 U = Ur * Ur * Ur
 Dr = Y * Y * Ur * Y * Y
 D = Dr * Dr * Dr
-Rr = np.matrix(Rrb)
+Rr = np.matrix(Rr_raw)
 R = Rr * Rr * Rr
-Lr = Zr * Zr * R * Zr * Zr
+Lr = Z * Z * R * Z * Z
 L = Lr * Lr * Lr
 Br = Zr * R * Z
 B = Br * Br * Br
-Fr = Zr * Zr * B * Zr * Zr
+Fr = Z * Z * B * Z * Z
 F = Fr * Fr * Fr
-# these are not recomanded, as it will change the center orientation.
+
+# two layer operation, will change center orientation, not recommanded.
 u = Z * D
 ur = u*u*u
 d = Zr * U
@@ -183,7 +167,7 @@ br = b*b*b
 # horizon, as z-ori middle layer rotation.
 H = u * Ur
 Hr = ur * U
-# verticall, x-ori
+# verticall, y-ori
 V = f * Fr
 Vr = fr * F
 # slice,  x-ori
@@ -197,9 +181,22 @@ f22 = R*u*u*R*R*u*R*R*u*R*R*u*u*R
 # colomn will be slot, row as element.
 # Ur/Rr as CounterClock roatation.
 # r or u as two portation rotation.
+# alias
+e1 = R
+e2 = Rr
+e3 = L
+e4 = Lr
+e5 = F
+e6 = Fr
+e7 = B
+e8 = Br
+e9 = U
+e10 = Ur
+e11 = D
+e12 = Dr
 
 
-def form_divid(s):
+def form_split(s):
     arr = []
     for i in s:
         arr.append(i)
@@ -219,7 +216,7 @@ def form_transform(arr):
 
 
 def ef(s):
-    elements = form_transform(form_divid(s))
+    elements = form_transform(form_split(s))
     mk = '*'
     fs = []
     for e in elements:
@@ -242,3 +239,5 @@ print(ef(f2))
 # print(ef(f3).nonzero())
 # print(ef(f4).nonzero())
 # print(ef("R'").nonzero())
+
+# TODO: simple_show, deconpose

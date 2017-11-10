@@ -13,6 +13,11 @@ import cmath
 def t(n):
     return 1 * cmath.exp(1j * ((2/3.0) * cmath.pi * n))
 # TODO: use decimal here.
+# TODO: draw text picture to show space position.
+# position is like upside to downside, side to coner,
+# clock rotation, near block first.
+#       position
+# block
 a = t(1)
 b = t(2)
 c = 0
@@ -128,8 +133,8 @@ Yr_raw = [
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c, c, c],
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b, c],
     ]
-
-
+C_20_1 = [1 for i in range(20)]
+c_20_1 = np.matrix(C_20_1)
 base = np.matrix(BASE)
 # basic operation define.
 Y = np.matrix(Yr_raw)
@@ -182,62 +187,97 @@ f22 = R*u*u*R*R*u*R*R*u*R*R*u*u*R
 # Ur/Rr as CounterClock roatation.
 # r or u as two portation rotation.
 # alias
+# if operation number distrane is times of 3, then
+# this two operation interactive indifferent.
+# times of 6, inverse operation.
 e1 = R
-e2 = Rr
-e3 = L
-e4 = Lr
-e5 = F
-e6 = Fr
-e7 = B
-e8 = Br
-e9 = U
-e10 = Ur
-e11 = D
+e2 = F
+e3 = U
+e4 = L
+e5 = B
+e6 = D
+e7 = Rr
+e8 = Fr
+e9 = Ur
+e10 = Lr
+e11 = Br
 e12 = Dr
 
 
-def form_split(s):
-    arr = []
-    for i in s:
-        arr.append(i)
-    return arr
+class RubicMatrix(object):
+    def __init__(self):
+        """
+        formula is like   R'U'2
+        operation is like  RrUU
+        """
+        decompose_d = {}
+        self.dc = decompose_d
+
+    # never write R2 as R'2, since it can not recongnize this form yet.
+    def fml_to_operation(self, fml):
+        operations = []
+        a = None
+        b = None
+        for item in fml:
+            a = item
+            if b is None:
+                b = a
+                continue
+            if a == "'":
+                b = "%s%s" % (b, "r")
+            elif a == "2":
+                operations.append(b)
+            else:
+                operations.append(b)
+                b = a
+        operations.append(b)
+        return operations
+
+    def operation_in_e(self, ops):
+        ops_revers = reversed(ops)
+        return ops_revers
+
+    def ep(self, operations):
+        """
+        evalue operation
+        """
+        elements = operations
+        mk = '*'
+        fs = []
+        for e in elements:
+            if not (fs == []):
+                fs = fs + mk + e
+            else:
+                fs = e
+        try:
+            matrix = eval(fs)
+            return matrix
+        except:
+            return []
+
+    def ef(self, fml):
+        return self.ep(self.fml_to_operation(fml))
+
+    def position(self, matrix):
+        return list(matrix.nonzero()[1])
+
+    def oritation(self, matrix):
+        return (c_20_1 * matrix)
 
 
-# never write R2 as R'2, since it can not recongnize this form yet.
-def form_transform(arr):
-    form = []
-    arr.append('end')
-    lenth = len(arr)
-    for x, y in zip(arr[0:(lenth - 1)], arr[1:]):
-        if not (x == "'" or x == '2'):
-            form.append(x) if not (y == "'") else form.append(x+'r')
-            form.append(x) if (y == '2') else 0
-    return form
-
-
-def ef(s):
-    elements = form_transform(form_split(s))
-    mk = '*'
-    fs = []
-    for e in elements:
-        if not (fs == []):
-            fs = fs + mk + e
-        else:
-            fs = e
-    try:
-        matrix = eval(fs)
-        return matrix
-    except:
-        return []
 
 
 f2 = "R'HR'HR2H'R'H'R'H'R2H"
 # f3  = 'RR'
 # f4 = "USSUSSUSSUSS"
-print(ef(f2).nonzero())
-print(ef(f2))
+# print(ef(f2).nonzero())
+# print(ef(f2))
 # print(ef(f3).nonzero())
 # print(ef(f4).nonzero())
 # print(ef("R'").nonzero())
-
+s = RubicMatrix()
+print("f2 position: %s" % (s.position(s.ef(f2))))
+print("f2 oritation: %s" % (s.oritation(s.ef(f2))))
+print("e1 position: %s" % (s.position(e1)))
+print("f2 oritation: %s" % (s.oritation(e1)))
 # TODO: simple_show, deconpose

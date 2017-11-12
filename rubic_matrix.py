@@ -209,79 +209,127 @@ class RubicMatrix(object):
         """
         formula is like   R'U'2
         operation is like  RrUU
+        hash_d is like
+        {"1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20":
+        ["R'HR'HR2H'R'H'R'H'R2H", ...],
+        ...}
         """
-        decompose_d = {}
-        self.dc = decompose_d
+        hash_d = {}
+        self.hash_d = hash_d
 
     # never write R2 as R'2, since it can not recongnize this form yet.
-    def fml_to_operation(self, fml):
-        operations = []
-        a = None
-        b = None
-        for item in fml:
-            a = item
-            if b is None:
-                b = a
-                continue
-            if a == "'":
-                b = "%s%s" % (b, "r")
-            elif a == "2":
-                operations.append(b)
-            else:
-                operations.append(b)
-                b = a
-        operations.append(b)
-        return operations
 
     def operation_in_e(self, ops):
         ops_revers = reversed(ops)
         return ops_revers
 
-    def ep(self, operations):
-        """
-        evalue operation
-        """
-        elements = operations
-        mk = '*'
-        fs = []
-        for e in elements:
-            if not (fs == []):
-                fs = fs + mk + e
+
+    def ef(self, fml, left_to_right=True):
+        def fml_to_operation(fml):
+            operations = []
+            item_a = None
+            item_b = None
+            for item in fml:
+                item_a = item
+                if item_b is None:
+                    item_b = item_a
+                    continue
+                if item_a == "'":
+                    item_b = "%s%s" % (item_b, "r")
+                elif item_a == "2":
+                    operations.append(item_b)
+                else:
+                    operations.append(item_b)
+                    item_b = item_a
+            operations.append(item_b)
+            return operations
+
+        def eval_operation(operations):
+            """
+            evalue operation;
+            using left to right order.
+            """
+            if left_to_right:
+                elements = reversed(operations)
             else:
-                fs = e
-        try:
-            matrix = eval(fs)
-            return matrix
-        except:
-            return []
+                elements = operations
+            mk = " * "
+            fs = []
+            for e in elements:
+                if not (fs == []):
+                    fs = fs + mk + e
+                else:
+                    fs = e
+            try:
+                matrix = eval(fs)
+                return matrix
+            except Exception as e:
+                print("#2, ERROR: %s" % (repr(e)))
+                return []
 
-    def ef(self, fml):
-        return self.ep(self.fml_to_operation(fml))
+        return eval_operation(fml_to_operation(fml))
 
-    def position(self, matrix):
-        return list(matrix.nonzero()[1])
+    def hash_matrix(self, matrix):
+        """
+        f2: R'HR'HR2H'R'H'R'H'R2H
+        f2 hash: 1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20
+        """
+        # abc_str = "abcdefghijklmnopqrst"
+        # num_abc_d = {}
+        # for num, abc in zip(range(20), abc_str):
+        #     num_abc_d["%s" % (num)] = abc
 
-    def oritation(self, matrix):
-        return (c_20_1 * matrix)
+        def position(matrix):
+            """
+            should transform before get shape.
+            """
+            p_019 = list(matrix.T.nonzero()[1])
+            p_120 = [i + 1 for i in p_019]
+            return p_120
 
-    # TODO: ipmlement one solve method of rubic cube
-    # TODO: XYZ is a small space similar problem. It could help.
+        def phase(matrix):
+            m201 = c_20_1 * matrix
+            clx_angle = list(m201.A1)
+            # print("clx_angle %s" % (clx_angle))
+            phase_pi = [cmath.phase(i) for i in clx_angle]
+            digt = []
+            for i in phase_pi:
+                if i > 0.1:
+                    digt.append('b')
+                elif i < -0.1:
+                    digt.append('c')
+                else:
+                    digt.append('a')
+            return digt
+
+        pos_pha_list = []
+        for pos, pha in zip(position(matrix), phase(matrix)):
+            if "a" == "%s" % (pha):
+                pos_pha_list.append("%s" % (pos))
+            else:
+                pos_pha_list.append("%s%s" % (pos, pha))
+        rlt = "%s/%s" % ("_".join(pos_pha_list[:12]), "_".join(pos_pha_list[12:]))
+        return rlt
+
+
+
+
 
 
 def main():
     f2 = "R'HR'HR2H'R'H'R'H'R2H"
-    # f3  = 'RR'
-    # f4 = "USSUSSUSSUSS"
-    # print(ef(f2).nonzero())
-    # print(ef(f2))
-    # print(ef(f3).nonzero())
-    # print(ef(f4).nonzero())
-    # print(ef("R'").nonzero())
+    f3 = "HR2H'R'H'R'H'R2HR'HR'"
     s = RubicMatrix()
-    print("f2 position: %s" % (s.position(s.ef(f2))))
-    print("f2 oritation: %s" % (s.oritation(s.ef(f2))))
-    print("e1 position: %s" % (s.position(e1)))
-    print("f2 oritation: %s" % (s.oritation(e1)))
+    print("f2: %s" % (f2))
+    print("f2 hash: %s" % (s.hash_matrix(s.ef(f2))))
+    print("f3: %s" % (f3))
+    print("f3 hash: %s" % (s.hash_matrix(s.ef(f3))))
+
+    # TODO: ipmlement one solve method of rubic cube
+    # DONE: XYZ is a small space similar problem. It could help.
+    # TODO: use these functinos to find out low level formula equivlent list.
+    # TODO: change right multiple to left multple, for easy to write reason.
+    # or just reverse the formula
 
 
 if __name__ == '__main__':

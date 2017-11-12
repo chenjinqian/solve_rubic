@@ -241,7 +241,7 @@ class RubicMatrix(object):
         for i in self.fml:
             yield i
 
-    def eval_fml(self, fml, left_to_right=True):
+    def eval_fml(self, fml):
         def fml_to_operation(fml):
             operations = []
             item_a = None
@@ -266,10 +266,7 @@ class RubicMatrix(object):
             evalue operation;
             using left to right order.
             """
-            if left_to_right:
-                elements = reversed(operations)
-            else:
-                elements = operations
+            elements = operations
             mk = " * "
             fs = []
             for e in elements:

@@ -155,7 +155,7 @@ L = Lr * Lr * Lr
 Fr = Zr * Rr * Z
 F = Fr * Fr * Fr
 B = Z * Z * F * Z * Z
-BR = B * B * B
+Br = B * B * B
 
 # two layer operation, will change center orientation, not recommanded.
 u = Z * D
@@ -237,9 +237,30 @@ class RubicMatrix(object):
             fml += self.fml[low_one]
         return fml
 
-    def fml_gen_acc(self):
+    def fml_gen_acc(self, fml, cnt):
+        """
+        really hard to write in python, without macro.
+        """
+        print(fml, cnt)
+        if cnt > 0:
+            for i in self.fml:
+                self.fml_gen_acc("%s%s" % (fml, i), cnt -1)
         for i in self.fml:
-            yield i
+            yield "%s%s" % (fml, i)
+
+    def fml_gen4(self):
+        for i in self.fml:
+            for j in self.fml:
+                if ((j+"'" == i) or (i+"'" == j)):
+                    continue
+                for k in self.fml:
+                    if ((j+"'" == k) or (k+"'" == j)):
+                        continue
+                    for m in self.fml:
+                        if ((j+"'" == k) or (k+"'" == j)):
+                            continue
+                        yield "%s%s%s%s" % (i, j, k, m)
+
 
     def eval_fml(self, fml):
         def fml_to_operation(fml):

@@ -9,6 +9,7 @@ import numpy as np
 # import scipy as sp
 import cmath
 import time
+# import itertools
 
 
 def t(n):
@@ -221,46 +222,90 @@ class RubicMatrix(object):
         self.d_12 = {}
         self.d_20 = {}
 
-    # def operation_in_e(self, ops):
-    #     ops_revers = reversed(ops)
-    #     return ops_revers
-
-    def fml_from_count(self, cnt):
-        """
-        cnt is int
-        """
-        fml = ""
-        cnt = int(cnt)
-        while cnt > 0:
-            low_one = cnt  % 11
-            cnt = int(cnt / 12)
-            fml += self.fml[low_one]
-        return fml
-
-    def fml_gen_acc(self, fml, cnt):
-        """
-        really hard to write in python, without macro.
-        """
-        print(fml, cnt)
-        if cnt > 0:
-            for i in self.fml:
-                self.fml_gen_acc("%s%s" % (fml, i), cnt -1)
+    def fml_gen1(self):
         for i in self.fml:
-            yield "%s%s" % (fml, i)
+            yield i
 
-    def fml_gen4(self):
-        for i in self.fml:
-            for j in self.fml:
-                if ((j+"'" == i) or (i+"'" == j)):
+    def gen_up(self, g):
+        # g2 = ("%s%s"%(i, j)  for i in s.fml_gen1() for j in s.fml if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
+        return ("%s%s"%(i, j) for i in g for j in self.fml  if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
+
+    def gen_level(self, n):
+        if n > 1:
+            return self.gen_up(self.gen_level(n-1))
+        else:
+            return self.fml_gen1()
+
+    # def fml_from_count(self, cnt):
+    #     """
+    #     cnt is int
+    #     """
+    #     fml = ""
+    #     cnt = int(cnt)
+    #     while cnt > 0:
+    #         low_one = cnt  % 11
+    #         cnt = int(cnt / 12)
+    #         fml += self.fml[low_one]
+    #     return fml
+
+    # def fml_gen_acc(self, fml, cnt):
+    #     """
+    #     really hard to write in python, without macro.
+    #     """
+    #     print(fml, cnt)
+    #     if cnt > 0:
+    #         for i in self.fml:
+    #             self.fml_gen_acc("%s%s" % (fml, i), cnt -1)
+    #     for i in self.fml:
+    #         yield "%s%s" % (fml, i)
+
+    # def fml_gen4(self):
+    #     for i in self.fml:
+    #         for j in self.fml:
+    #             if ((j+"'" == i) or (i+"'" == j)):
+    #                 continue
+    #             for k in self.fml:
+    #                 if ((j+"'" == k) or (k+"'" == j)):
+    #                     continue
+    #                 for m in self.fml:
+    #                     if ((j+"'" == k) or (k+"'" == j)):
+    #                         continue
+    #                     yield "%s%s%s%s" % (i, j, k, m)
+
+    def fill_up_d(self, n):
+        gen_n = self.gen_level(n)
+        cnt = 0
+        for fml in gen_n:
+            try:
+                hash_20 = self.hash_matrix(self.eval_fml(fml))
+                hash_12, hash_8 = hash_20.split("/")
+                check_point = hash_8.split("_")[-1]
+                if not "20" == check_point:
                     continue
-                for k in self.fml:
-                    if ((j+"'" == k) or (k+"'" == j)):
-                        continue
-                    for m in self.fml:
-                        if ((j+"'" == k) or (k+"'" == j)):
-                            continue
-                        yield "%s%s%s%s" % (i, j, k, m)
+                # 1 / 24 situation need to be considered.
+                if hash_20 in self.d_20:
+                    self.d_20[hash_20] = self.d_20[hash_20] + [fml]
+                else:
+                    self.d_20[hash_20] = [fml]
+                if hash_12 in self.d_12:
+                    self.d_12[hash_12] = self.d_12[hash_12] + [fml]
+                else:
+                    self.d_12[hash_12] = [fml]
+                if hash_8 in self.d_8:
+                    self.d_8[hash_8] = self.d_8[hash_8] + [fml]
+                else:
+                    self.d_8[hash_8] = [fml]
+                cnt += 1
+            except Exception as e:
+                print(repr(e))
+                print(hash_20, fml)
+        return cnt
 
+    def check_cofflict(self, d):
+        for key in d:
+            val = d[key]
+            if len(val) > 1:
+                yield (key, val)
 
     def eval_fml(self, fml):
         def fml_to_operation(fml):

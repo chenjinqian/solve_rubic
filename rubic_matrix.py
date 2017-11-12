@@ -152,10 +152,10 @@ Rr = np.matrix(Rr_raw)
 R = Rr * Rr * Rr
 Lr = Z * Z * R * Z * Z
 L = Lr * Lr * Lr
-Br = Zr * R * Z
-B = Br * Br * Br
-Fr = Z * Z * B * Z * Z
+Fr = Zr * Rr * Z
 F = Fr * Fr * Fr
+Br = Z * Z * F * Z * Z
+B = Br * Br * Br
 
 # two layer operation, will change center orientation, not recommanded.
 u = Z * D
@@ -215,12 +215,31 @@ class RubicMatrix(object):
         ["R'HR'HR2H'R'H'R'H'R2H", ...],
         ...}
         """
-        hash_d = {}
-        self.hash_d = hash_d
+        self.fml = ["R", "F", "U", "L", "B", "D",
+                    "R'", "F'", "U'", "L'", "B'", "D'"]
+        self.d_8 = {}
+        self.d_12 = {}
+        self.d_20 = {}
 
-    def operation_in_e(self, ops):
-        ops_revers = reversed(ops)
-        return ops_revers
+    # def operation_in_e(self, ops):
+    #     ops_revers = reversed(ops)
+    #     return ops_revers
+
+    def fml_from_count(self, cnt):
+        """
+        cnt is int
+        """
+        fml = ""
+        cnt = int(cnt)
+        while cnt > 0:
+            low_one = cnt  % 11
+            cnt = int(cnt / 12)
+            fml += self.fml[low_one]
+        return fml
+
+    def fml_gen_acc(self):
+        for i in self.fml:
+            yield i
 
     def eval_fml(self, fml, left_to_right=True):
         def fml_to_operation(fml):

@@ -142,7 +142,7 @@ Y = np.matrix(Yr_raw)
 Yr = Y * Y * Y
 Zr = np.matrix(Zr_raw)
 Z = Zr * Zr * Zr
-Xr = Z * Y * Zr
+Xr = Z * Yr * Zr
 X = Xr * Xr * Xr
 Ur = np.matrix(Ur_raw)
 U = Ur * Ur * Ur
@@ -154,8 +154,8 @@ Lr = Z * Z * R * Z * Z
 L = Lr * Lr * Lr
 Fr = Zr * Rr * Z
 F = Fr * Fr * Fr
-Br = Z * Z * F * Z * Z
-B = Br * Br * Br
+B = Z * Z * F * Z * Z
+BR = B * B * B
 
 # two layer operation, will change center orientation, not recommanded.
 u = Z * D

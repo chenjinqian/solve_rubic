@@ -8,6 +8,7 @@
 import numpy as np
 # import scipy as sp
 import cmath
+import time
 
 
 def t(n):
@@ -217,14 +218,11 @@ class RubicMatrix(object):
         hash_d = {}
         self.hash_d = hash_d
 
-    # never write R2 as R'2, since it can not recongnize this form yet.
-
     def operation_in_e(self, ops):
         ops_revers = reversed(ops)
         return ops_revers
 
-
-    def ef(self, fml, left_to_right=True):
+    def eval_fml(self, fml, left_to_right=True):
         def fml_to_operation(fml):
             operations = []
             item_a = None
@@ -266,8 +264,26 @@ class RubicMatrix(object):
             except Exception as e:
                 print("#2, ERROR: %s" % (repr(e)))
                 return []
-
         return eval_operation(fml_to_operation(fml))
+
+    def steps(self, fml):
+        operations = []
+        item_a = None
+        item_b = None
+        for item in fml:
+            item_a = item
+            if item_b is None:
+                item_b = item_a
+                continue
+            if item_a == "'":
+                item_b = "%s%s" % (item_b, "r")
+            elif item_a == "2":
+                operations.append(item_b)
+            else:
+                operations.append(item_b)
+                item_b = item_a
+        operations.append(item_b)
+        return len(operations)
 
     def hash_matrix(self, matrix):
         """
@@ -312,19 +328,20 @@ class RubicMatrix(object):
         return rlt
 
 
-
-
-
-
 def main():
+    f1 = "R'U'2RUR'URURU2R'U'RU'R'"
     f2 = "R'HR'HR2H'R'H'R'H'R2H"
     f3 = "HR2H'R'H'R'H'R2HR'HR'"
     s = RubicMatrix()
-    print("f2: %s" % (f2))
-    print("f2 hash: %s" % (s.hash_matrix(s.ef(f2))))
-    print("f3: %s" % (f3))
-    print("f3 hash: %s" % (s.hash_matrix(s.ef(f3))))
-
+    print("f1: %s, %s steps." % (f1, s.steps(f1)))
+    print("f2: %s, %s steps." % (f2, s.steps(f2)))
+    print("f3: %s, %s steps." % (f3, s.steps(f3)))
+    ta = time.time()
+    print("f1 hash: %s" % (s.hash_matrix(s.eval_fml(f1))))
+    print("f2 hash: %s" % (s.hash_matrix(s.eval_fml(f2))))
+    print("f3 hash: %s" % (s.hash_matrix(s.eval_fml(f3))))
+    tb = time.time()
+    print("spend %s s" % (float(tb - ta)))
     # TODO: ipmlement one solve method of rubic cube
     # DONE: XYZ is a small space similar problem. It could help.
     # TODO: use these functinos to find out low level formula equivlent list.

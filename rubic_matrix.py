@@ -233,7 +233,7 @@ class RubicMatrix(object):
         # g2 = ("%s%s"%(i, j)  for i in s.fml_gen1() for j in s.fml if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
         return ("%s%s"%(i, j) for i in g for j in self.fml  if self.check_fml_valid(i, j))
 
-    def check_fml_valid(self, item_i, item_j):
+    def check_fml_valid(self, item_i, item_j, v=False):
         # if ((item_j+"'" == item_i[-1]) or (item_i[-1]+"'" == item_j)):
         #     return False
         allow_d = {}
@@ -251,37 +251,77 @@ class RubicMatrix(object):
                       ["F", "U", "B", "D", "F'", "U'", "B'", "D'"],
                       ["R", "U", "L", "D", "R'", "U'", "L'", "D'"],
                       ["R", "F", "L", "B", "R'", "F'", "L'", "B'"],]
+        indep_d = {"R": {"L": '', "L'": ''},
+                   "F": {"B": '', "B'": ''},
+                   "B": {"F": '', "F'": ''},
+                   "U": {"D": '', "D'": ''},
+                   "L": {"R": '', "R'": ''},
+                   "D": {"U": '', "U'": ''},
+                   "R'": {"L": '', "L'": ''},
+                   "F'": {"B": '', "B'": ''},
+                   "B'": {"F": '', "F'": ''},
+                   "U'": {"D": '', "D'": ''},
+                   "L'": {"R": '', "R'": ''},
+                   "D'": {"U": '', "U'": ''}
+        }
+        reverse_d = {
+            "R": "R'",
+            "F": "F'",
+            "B": "B'",
+            "U": "U'",
+            "L": "L'",
+            "D": "D'",
+            "R'": "R",
+            "F'": "F",
+            "B'": "B",
+            "U'": "U",
+            "L'": "L",
+            "D'": "D",
+        }
         for first, possible_list in zip(self.fml, allow_list):
             for possible_one in possible_list:
                 allow_d[first][possible_one] = ''
         items = []
         a = ''
         b = ''
-        for one in item_i:
-            a = b
-            b = one
-            if "'" == b:
-                items.append("%s%s" % (a, b))
-            else:
-                items.append(a)
-        if not ("'" == b):
-            items.append(b)
-        last_one = items[-1]
-        if item_j not in allow_d[last_one]:
-            return False
-        if len(items) > 1:
-            last_second = items[-2]
-            if last_one == last_second:
+        try:
+            for one in item_i:
+                b = one
+                if "'" == b:
+                    a = "%s%s" % (a, b)
+                    items.append(a)
+                else:
+                    if a:
+                        items.append(a)
+                    a = b
+            if not ("'" == b):
+                items.append(b)
+            if v:
+                print("items %s" % (items))
+            last_one = items[-1]
+            if item_j not in allow_d[last_one]:
                 return False
+            if len(items) > 1:
+                last_second = items[-2]
+                if v:
+                    print("item_i: %s, item_j: %s, last: %s, second: %s " % (
+                        item_i, item_j, last_one, last_second
+                    ))
+                if last_one == last_second:
+                    return False
+                if item_j in indep_d[last_one]:
+                    if (item_j == reverse_d[last_second]) or (item_j == last_second):
+                        return False
+        except Exception as e:
+            print("%s ERROR" % (repr(e)))
+            print(item_j, item_i, items)
         return True
-
 
 
     def gen_level(self, n):
         if n > 1:
             return self.gen_up(self.gen_level(n-1))
-        else:
-            return self.fml_gen1()
+        return self.fml_gen1()
 
     # def fml_from_count(self, cnt):
     #     """

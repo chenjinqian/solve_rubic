@@ -216,19 +216,66 @@ class RubicMatrix(object):
         ["R'HR'HR2H'R'H'R'H'R2H", ...],
         ...}
         """
-        self.fml = ["R", "F", "U", "L", "B", "D",
-                    "R'", "F'", "U'", "L'", "B'", "D'"]
+        self.fml = [
+            "R", "F", "U", "L", "B", "D",
+            "R'", "F'", "U'", "L'", "B'", "D'"
+        ]
         self.d_8 = {}
         self.d_12 = {}
         self.d_20 = {}
 
     def fml_gen1(self):
-        for i in self.fml:
+        for i in ["R"]:
+        # for i in self.fml:
             yield i
 
     def gen_up(self, g):
         # g2 = ("%s%s"%(i, j)  for i in s.fml_gen1() for j in s.fml if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
-        return ("%s%s"%(i, j) for i in g for j in self.fml  if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
+        return ("%s%s"%(i, j) for i in g for j in self.fml  if self.check_fml_valid(i, j))
+
+    def check_fml_valid(self, item_i, item_j):
+        # if ((item_j+"'" == item_i[-1]) or (item_i[-1]+"'" == item_j)):
+        #     return False
+        allow_d = {}
+        for one in self.fml:
+            allow_d[one] = {}
+        allow_list = [["R", "F", "U", "B", "D", "F'", "U'", "B'", "D'", "L", "L'"],
+                      ["F", "R", "U", "L", "D", "R'", "U'", "L'", "D'", "B", "B'"],
+                      ["U", "R", "F", "L", "B", "R'", "F'", "L'", "B'", "D", "D'"],
+                      ["L", "F", "U", "B", "D", "R'", "F'", "U'", "B'", "D'"],
+                      ["B", "R", "U", "L", "D", "R'", "F'", "U'", "L'", "D'"],
+                      ["D", "R", "F", "L", "B", "R'", "F'", "U'", "L'", "B'"],
+                      ["F", "U", "B", "D", "F'", "U'", "L'", "B'", "D'"],
+                      ["R", "U", "L", "D", "R'", "U'", "L'", "B'", "D'"],
+                      ["R", "F", "L", "B", "R'", "F'", "L'", "B'", "D'"],
+                      ["F", "U", "B", "D", "F'", "U'", "B'", "D'"],
+                      ["R", "U", "L", "D", "R'", "U'", "L'", "D'"],
+                      ["R", "F", "L", "B", "R'", "F'", "L'", "B'"],]
+        for first, possible_list in zip(self.fml, allow_list):
+            for possible_one in possible_list:
+                allow_d[first][possible_one] = ''
+        items = []
+        a = ''
+        b = ''
+        for one in item_i:
+            a = b
+            b = one
+            if "'" == b:
+                items.append("%s%s" % (a, b))
+            else:
+                items.append(a)
+        if not ("'" == b):
+            items.append(b)
+        last_one = items[-1]
+        if item_j not in allow_d[last_one]:
+            return False
+        if len(items) > 1:
+            last_second = items[-2]
+            if last_one == last_second:
+                return False
+        return True
+
+
 
     def gen_level(self, n):
         if n > 1:
@@ -279,9 +326,9 @@ class RubicMatrix(object):
             try:
                 hash_20 = self.hash_matrix(self.eval_fml(fml))
                 hash_12, hash_8 = hash_20.split("/")
-                check_point = hash_8.split("_")[-1]
-                if not "20" == check_point:
-                    continue
+                # check_point = hash_8.split("_")[-1]
+                # if not "20" == check_point:
+                #     continue
                 # 1 / 24 situation need to be considered.
                 if hash_20 in self.d_20:
                     self.d_20[hash_20] = self.d_20[hash_20] + [fml]
@@ -429,6 +476,8 @@ def main():
     # TODO: use these functinos to find out low level formula equivlent list.
     # TODO: change right multiple to left multple, for easy to write reason.
     # or just reverse the formula
+    # TODO: use reduced symbol caculation, not directerly matrix multiple,
+    # group operator.
 
 
 if __name__ == '__main__':

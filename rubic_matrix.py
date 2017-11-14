@@ -419,22 +419,33 @@ class RubicMatrix(object):
 
     def _status_d_from_loop(self, lp):
         base_status_d = self._status_d_from_hash(self.hash_matrix(base))
-        for sub_loop in lp:
-            pass
-        pass
+        lp_list = [s.split(".") for s in lp.split("/")]
+        for sub_loop in lp_list:
+            symb_1st = ''
+            place = ''
+            for symb in sub_loop:
+                if not symb_1st:
+                    symb_1st = symb
+                if place:
+                    base_status_d[place] = symb
+                if not symb in base_status_d:
+                    symb = symb[:-1]
+                place = symb
+            base_status_d[place] = symb_1st
+        return base_status_d
 
     def _status_d_operator(self, sd1, sd2):
         rlt_d = {}
         for key in sd2:
             val2 = sd2[key]
-            if val not in sd2:
+            if val2 not in sd2:
                 val_num2 = val2[:-1]
                 val_pos2 = val2[-1:]
             else:
                 val_num2 = val2
                 val_pos2 = ''
             val1 = sd1[val_num2]
-            if val not in sd1:
+            if val1 not in sd1:
                 val_num1 = val1[:-1]
                 val_pos1 = val1[-1:]
             else:

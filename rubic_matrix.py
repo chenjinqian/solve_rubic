@@ -358,8 +358,8 @@ class RubicMatrix(object):
         input:
         '6_2_3_8b_1b_4_7_12b_5_9_11_10b/14b_16c_15_20b_18c_13b_19_17c'
         output:
-        (come or pull version version)
-        [[]]6, 4, 8b, 12b, 10b, 9, 5, 1b], []14b, 16c, 20b, 17c, 18c, 13b]]
+        (come or pull, means)
+        '6.4.8b.12b.10b.9.5.1b/14b.16c.20b.17c.18c.13b'
         """
         status_d = self._status_d_from_hash(matrix_hash)
         lp = self._loop_from_status_d(status_d)
@@ -385,37 +385,37 @@ class RubicMatrix(object):
         key_seq = ["%s" % (int(i) + 1) for i in range(20)]
         lp = []
         while (len(tmp_d) < 20):
-            time.sleep(1)
-            first_symb = ''
             for key in key_seq:
                 if key in tmp_d:
                     continue
-                print("#2, key %s" % (key))
+                # print("#2, key %s" % (key))
                 val = status_d[key]
                 if (key == val):
-                    print("key = val, %s" % (key))
+                    # print("key=val, %s" % (key))
                     tmp_d[key] = ''
                 else:
-                    sub_loop = []
                     first_symb = val
-                    val_next = ''
+                    # print("#4, first_symb %s" % (first_symb))
+                    sub_loop = []
+                    sub_loop.append(val)
                     tmp_d[key] = ''
-                    sub_loop.append(first_symb)
-                    while (not val_next == first_symb):
-                        time.sleep(0.3)
-                        val_next = status_d[key]
-                        sub_loop.append(val_next)
-                        if not val_next in status_d:
-                            key_next = "%s" % (val_next[:-1])
+                    if not val in status_d:
+                        key = "%s" % (val[:-1])
+                    else:
+                        key = "%s" % (val)
+                    val = status_d[key]
+                    while (not val == first_symb):
+                        sub_loop.append(val)
+                        tmp_d[key] = ''
+                        if not val in status_d:
+                            key = "%s" % (val[:-1])
                         else:
-                            key_next = "%s" % (val_next)
-                        val_sub = status_d[key_next]
-                        tmp_d[key_next] = ''
-                        print(tmp_d)
-                        print("#3, val %s, key_next %s" % (val, key_next))
+                            key = "%s" % (val)
+                        val = status_d[key]
+                        # print("#3, val %s, key_next %s" % (val, key))
                     lp.append(sub_loop)
-        return lp
-
+        lp_str = "/".join([".".join(i) for i in lp])
+        return lp_str
 
     def _status_d_from_loop(self, lp):
         base_status_d = self._status_d_from_hash(self.hash_matrix(base))

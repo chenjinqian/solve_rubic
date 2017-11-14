@@ -8,6 +8,7 @@
 import numpy as np
 # import scipy as sp
 import cmath
+import re
 import time
 # import itertools
 
@@ -224,18 +225,16 @@ class RubicMatrix(object):
         self.d_12 = {}
         self.d_20 = {}
 
+
     def fml_gen1(self):
         for i in ["R"]:
         # for i in self.fml:
             yield i
 
     def gen_up(self, g):
-        # g2 = ("%s%s"%(i, j)  for i in s.fml_gen1() for j in s.fml if not ((j+"'" == i[-1]) or (i[-1]+"'" == j)))
         return ("%s%s"%(i, j) for i in g for j in self.fml  if self.check_fml_valid(i, j))
 
     def check_fml_valid(self, item_i, item_j, v=False):
-        # if ((item_j+"'" == item_i[-1]) or (item_i[-1]+"'" == item_j)):
-        #     return False
         allow_d = {}
         for one in self.fml:
             allow_d[one] = {}
@@ -317,47 +316,10 @@ class RubicMatrix(object):
             print(item_j, item_i, items)
         return True
 
-
     def gen_level(self, n):
         if n > 1:
             return self.gen_up(self.gen_level(n-1))
         return self.fml_gen1()
-
-    # def fml_from_count(self, cnt):
-    #     """
-    #     cnt is int
-    #     """
-    #     fml = ""
-    #     cnt = int(cnt)
-    #     while cnt > 0:
-    #         low_one = cnt  % 11
-    #         cnt = int(cnt / 12)
-    #         fml += self.fml[low_one]
-    #     return fml
-
-    # def fml_gen_acc(self, fml, cnt):
-    #     """
-    #     really hard to write in python, without macro.
-    #     """
-    #     print(fml, cnt)
-    #     if cnt > 0:
-    #         for i in self.fml:
-    #             self.fml_gen_acc("%s%s" % (fml, i), cnt -1)
-    #     for i in self.fml:
-    #         yield "%s%s" % (fml, i)
-
-    # def fml_gen4(self):
-    #     for i in self.fml:
-    #         for j in self.fml:
-    #             if ((j+"'" == i) or (i+"'" == j)):
-    #                 continue
-    #             for k in self.fml:
-    #                 if ((j+"'" == k) or (k+"'" == j)):
-    #                     continue
-    #                 for m in self.fml:
-    #                     if ((j+"'" == k) or (k+"'" == j)):
-    #                         continue
-    #                     yield "%s%s%s%s" % (i, j, k, m)
 
     def fill_up_d(self, n):
         gen_n = self.gen_level(n)
@@ -387,6 +349,122 @@ class RubicMatrix(object):
                 print(repr(e))
                 print(hash_20, fml)
         return cnt
+
+    def expand_d(self):
+        pass
+
+    def loop_from_hash(self, matrix_hash):
+        """
+        input:
+        '6_2_3_8b_1b_4_7_12b_5_9_11_10b/14b_16c_15_20b_18c_13b_19_17c'
+        output:
+        (come or pull version version)
+        [[]]6, 4, 8b, 12b, 10b, 9, 5, 1b], []14b, 16c, 20b, 17c, 18c, 13b]]
+        """
+        status_d = self._status_d_from_hash(matrix_hash)
+        lp = self._loop_from_status_d(status_d)
+        return lp
+
+    def _status_d_from_hash(self, matrix_hash):
+        d = {}
+        sybs = [i for j in matrix_hash.split("/") for i in j.split("_") ]
+        for num_0, syb in zip(range(20), sybs):
+            d[str(int(num_0) + 1)] = syb
+        return d
+
+    def _hash_from_status_d(self, status_d):
+        symbs = [status_d[str(int(i) + 1)] for i in range(20)]
+        hs = "/".join(["_".join(symbs[:12]), "_".join(symbs[12:])])
+        return hs
+
+    def _loop_from_status_d(self, status_d):
+        """
+        need new version to speed up.
+        """
+        tmp_d = {}
+        key_seq = ["%s" % (int(i) + 1) for i in range(20)]
+        lp = []
+        while (len(tmp_d) < 20):
+            time.sleep(1)
+            first_symb = ''
+            for key in key_seq:
+                if key in tmp_d:
+                    continue
+                print("#2, key %s" % (key))
+                val = status_d[key]
+                if (key == val):
+                    print("key = val, %s" % (key))
+                    tmp_d[key] = ''
+                else:
+                    sub_loop = []
+                    first_symb = val
+                    val_next = ''
+                    tmp_d[key] = ''
+                    sub_loop.append(first_symb)
+                    while (not val_next == first_symb):
+                        time.sleep(0.3)
+                        val_next = status_d[key]
+                        sub_loop.append(val_next)
+                        if not val_next in status_d:
+                            key_next = "%s" % (val_next[:-1])
+                        else:
+                            key_next = "%s" % (val_next)
+                        val_sub = status_d[key_next]
+                        tmp_d[key_next] = ''
+                        print(tmp_d)
+                        print("#3, val %s, key_next %s" % (val, key_next))
+                    lp.append(sub_loop)
+        return lp
+
+
+    def _status_d_from_loop(self, lp):
+        base_status_d = self._status_d_from_hash(self.hash_matrix(base))
+        for sub_loop in lp:
+            pass
+        pass
+
+    def _status_d_operator(self, sd1, sd2):
+        rlt_d = {}
+        for key in sd2:
+            val2 = sd2[key]
+            if val not in sd2:
+                val_num2 = val2[:-1]
+                val_pos2 = val2[-1:]
+            else:
+                val_num2 = val2
+                val_pos2 = ''
+            val1 = sd1[val_num2]
+            if val not in sd1:
+                val_num1 = val1[:-1]
+                val_pos1 = val1[-1:]
+            else:
+                val_num1 = val1
+                val_pos1 = ''
+            rlt_num = val_num1
+            if not (val_pos1 and val_pos2):
+                # ('', b), ('', c) -> b, c
+                rlt_pos = (val_pos1 or val_pos2)
+            elif not (val_pos1 == val_pos2):
+                # (c, b) -> ''
+                rlt_pos = ''
+            elif int(val_num2) <= 12:
+                # (b, b)_12 -> ''
+                rlt_pos = ''
+            elif (val_pos1 == 'b'):
+                # (b, b)_20 -> 'c'
+                rlt_pos = 'c'
+            else:
+                # (c, c)_20 -> 'b'
+                rlt_pos = 'b'
+            rlt_d[key] = "%s%s" % (rlt_num, rlt_pos)
+        return rlt_d
+
+    def loop_operator(self, lp1, lp2):
+        sd1 = self._status_d_from_loop(lp1)
+        sd2 = self._status_d_from_loop(lp2)
+        sd_rlt = self._status_d_operator(sd1, sd2)
+        lp_rlt = self._loop_from_status_d(sd_rlt)
+        return lp_rlt
 
     def check_cofflict(self, d):
         for key in d:
@@ -459,11 +537,6 @@ class RubicMatrix(object):
         f2: R'HR'HR2H'R'H'R'H'R2H
         f2 hash: 1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20
         """
-        # abc_str = "abcdefghijklmnopqrst"
-        # num_abc_d = {}
-        # for num, abc in zip(range(20), abc_str):
-        #     num_abc_d["%s" % (num)] = abc
-
         def position(matrix):
             """
             should transform before get shape.
@@ -518,7 +591,44 @@ def main():
     # or just reverse the formula
     # TODO: use reduced symbol caculation, not directerly matrix multiple,
     # group operator.
+    # TODO: expand_d
+    # TODO: group analysis hash value, and count mct.
 
+
+
+    # def fml_from_count(self, cnt):
+    #     """
+    #     cnt is int
+    #     """
+    #     fml = ""
+    #     cnt = int(cnt)
+    #     while cnt > 0:
+    #         low_one = cnt  % 11
+    #         cnt = int(cnt / 12)
+    #         fml += self.fml[low_one]
+    #     return fml
+    # def fml_gen_acc(self, fml, cnt):
+    #     """
+    #     really hard to write in python, without macro.
+    #     """
+    #     print(fml, cnt)
+    #     if cnt > 0:
+    #         for i in self.fml:
+    #             self.fml_gen_acc("%s%s" % (fml, i), cnt -1)
+    #     for i in self.fml:
+    #         yield "%s%s" % (fml, i)
+    # def fml_gen4(self):
+    #     for i in self.fml:
+    #         for j in self.fml:
+    #             if ((j+"'" == i) or (i+"'" == j)):
+    #                 continue
+    #             for k in self.fml:
+    #                 if ((j+"'" == k) or (k+"'" == j)):
+    #                     continue
+    #                 for m in self.fml:
+    #                     if ((j+"'" == k) or (k+"'" == j)):
+    #                         continue
+    #                     yield "%s%s%s%s" % (i, j, k, m)
 
 if __name__ == '__main__':
     main()

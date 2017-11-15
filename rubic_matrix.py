@@ -8,7 +8,6 @@
 import numpy as np
 # import scipy as sp
 import cmath
-import re
 import time
 # import itertools
 
@@ -225,44 +224,45 @@ class RubicMatrix(object):
         self.d_12 = {}
         self.d_20 = {}
 
-
     def fml_gen1(self):
-        for i in ["R"]:
         # for i in self.fml:
+        for i in ["R"]:
             yield i
 
     def gen_up(self, g):
-        return ("%s%s"%(i, j) for i in g for j in self.fml  if self.check_fml_valid(i, j))
+        return ("%s%s" % (i, j) for i in g
+                for j in self.fml if self.check_fml_valid(i, j))
 
     def check_fml_valid(self, item_i, item_j, v=False):
         allow_d = {}
         for one in self.fml:
             allow_d[one] = {}
-        allow_list = [["R", "F", "U", "B", "D", "F'", "U'", "B'", "D'", "L", "L'"],
-                      ["F", "R", "U", "L", "D", "R'", "U'", "L'", "D'", "B", "B'"],
-                      ["U", "R", "F", "L", "B", "R'", "F'", "L'", "B'", "D", "D'"],
-                      ["L", "F", "U", "B", "D", "R'", "F'", "U'", "B'", "D'"],
-                      ["B", "R", "U", "L", "D", "R'", "F'", "U'", "L'", "D'"],
-                      ["D", "R", "F", "L", "B", "R'", "F'", "U'", "L'", "B'"],
-                      ["F", "U", "B", "D", "F'", "U'", "L'", "B'", "D'"],
-                      ["R", "U", "L", "D", "R'", "U'", "L'", "B'", "D'"],
-                      ["R", "F", "L", "B", "R'", "F'", "L'", "B'", "D'"],
-                      ["F", "U", "B", "D", "F'", "U'", "B'", "D'"],
-                      ["R", "U", "L", "D", "R'", "U'", "L'", "D'"],
-                      ["R", "F", "L", "B", "R'", "F'", "L'", "B'"],]
-        indep_d = {"R": {"L": '', "L'": ''},
-                   "F": {"B": '', "B'": ''},
-                   "B": {"F": '', "F'": ''},
-                   "U": {"D": '', "D'": ''},
-                   "L": {"R": '', "R'": ''},
-                   "D": {"U": '', "U'": ''},
-                   "R'": {"L": '', "L'": ''},
-                   "F'": {"B": '', "B'": ''},
-                   "B'": {"F": '', "F'": ''},
-                   "U'": {"D": '', "D'": ''},
-                   "L'": {"R": '', "R'": ''},
-                   "D'": {"U": '', "U'": ''}
-        }
+        allow_list = [
+            ["R", "F", "U", "B", "D", "F'", "U'", "B'", "D'", "L", "L'"],
+            ["F", "R", "U", "L", "D", "R'", "U'", "L'", "D'", "B", "B'"],
+            ["U", "R", "F", "L", "B", "R'", "F'", "L'", "B'", "D", "D'"],
+            ["L", "F", "U", "B", "D", "R'", "F'", "U'", "B'", "D'"],
+            ["B", "R", "U", "L", "D", "R'", "F'", "U'", "L'", "D'"],
+            ["D", "R", "F", "L", "B", "R'", "F'", "U'", "L'", "B'"],
+            ["F", "U", "B", "D", "F'", "U'", "L'", "B'", "D'"],
+            ["R", "U", "L", "D", "R'", "U'", "L'", "B'", "D'"],
+            ["R", "F", "L", "B", "R'", "F'", "L'", "B'", "D'"],
+            ["F", "U", "B", "D", "F'", "U'", "B'", "D'"],
+            ["R", "U", "L", "D", "R'", "U'", "L'", "D'"],
+            ["R", "F", "L", "B", "R'", "F'", "L'", "B'"]]
+        indep_d = {
+            "R": {"L": '', "L'": ''},
+            "F": {"B": '', "B'": ''},
+            "B": {"F": '', "F'": ''},
+            "U": {"D": '', "D'": ''},
+            "L": {"R": '', "R'": ''},
+            "D": {"U": '', "U'": ''},
+            "R'": {"L": '', "L'": ''},
+            "F'": {"B": '', "B'": ''},
+            "B'": {"F": '', "F'": ''},
+            "U'": {"D": '', "D'": ''},
+            "L'": {"R": '', "R'": ''},
+            "D'": {"U": '', "U'": ''}}
         reverse_d = {
             "R": "R'",
             "F": "F'",
@@ -275,8 +275,7 @@ class RubicMatrix(object):
             "B'": "B",
             "U'": "U",
             "L'": "L",
-            "D'": "D",
-        }
+            "D'": "D"}
         for first, possible_list in zip(self.fml, allow_list):
             for possible_one in possible_list:
                 allow_d[first][possible_one] = ''
@@ -309,7 +308,8 @@ class RubicMatrix(object):
                 if last_one == last_second:
                     return False
                 if item_j in indep_d[last_one]:
-                    if (item_j == reverse_d[last_second]) or (item_j == last_second):
+                    if ((item_j == reverse_d[last_second]) or
+                            (item_j == last_second)):
                         return False
         except Exception as e:
             print("%s ERROR" % (repr(e)))
@@ -367,7 +367,7 @@ class RubicMatrix(object):
 
     def _status_d_from_hash(self, matrix_hash):
         d = {}
-        sybs = [i for j in matrix_hash.split("/") for i in j.split("_") ]
+        sybs = [i for j in matrix_hash.split("/") for i in j.split("_")]
         for num_0, syb in zip(range(20), sybs):
             d[str(int(num_0) + 1)] = syb
         return d
@@ -399,7 +399,7 @@ class RubicMatrix(object):
                     sub_loop = []
                     sub_loop.append(val)
                     tmp_d[key] = ''
-                    if not val in status_d:
+                    if val not in status_d:
                         key = "%s" % (val[:-1])
                     else:
                         key = "%s" % (val)
@@ -407,7 +407,7 @@ class RubicMatrix(object):
                     while (not val == first_symb):
                         sub_loop.append(val)
                         tmp_d[key] = ''
-                        if not val in status_d:
+                        if val not in status_d:
                             key = "%s" % (val[:-1])
                         else:
                             key = "%s" % (val)
@@ -428,7 +428,7 @@ class RubicMatrix(object):
                     symb_1st = symb
                 if place:
                     base_status_d[place] = symb
-                if not symb in base_status_d:
+                if symb not in base_status_d:
                     symb = symb[:-1]
                 place = symb
             base_status_d[place] = symb_1st
@@ -577,7 +577,8 @@ class RubicMatrix(object):
                 pos_pha_list.append("%s" % (pos))
             else:
                 pos_pha_list.append("%s%s" % (pos, pha))
-        rlt = "%s/%s" % ("_".join(pos_pha_list[:12]), "_".join(pos_pha_list[12:]))
+        rlt = "%s/%s" % ("_".join(pos_pha_list[:12]),
+                         "_".join(pos_pha_list[12:]))
         return rlt
 
 
@@ -595,18 +596,6 @@ def main():
     print("f3 hash: %s" % (s.hash_matrix(s.eval_fml(f3))))
     tb = time.time()
     print("spend %s s" % (float(tb - ta)))
-    # TODO: ipmlement one solve method of rubic cube
-    # DONE: XYZ is a small space similar problem. It could help.
-    # TODO: use these functinos to find out low level formula equivlent list.
-    # TODO: change right multiple to left multple, for easy to write reason.
-    # or just reverse the formula
-    # TODO: use reduced symbol caculation, not directerly matrix multiple,
-    # group operator.
-    # TODO: expand_d
-    # TODO: group analysis hash value, and count mct.
-
-
-
     # def fml_from_count(self, cnt):
     #     """
     #     cnt is int
@@ -640,6 +629,17 @@ def main():
     #                     if ((j+"'" == k) or (k+"'" == j)):
     #                         continue
     #                     yield "%s%s%s%s" % (i, j, k, m)
+
+    # TODO: ipmlement one solve method of rubic cube
+    # DONE: XYZ is a small space similar problem. It could help.
+    # TODO: use these functinos to find out low level formula equivlent list.
+    # TODO: change right multiple to left multple, for easy to write reason.
+    # or just reverse the formula
+    # TODO: use reduced symbol caculation, not directerly matrix multiple,
+    # group operator.
+    # TODO: expand_d
+    # TODO: group analysis hash value, and count mct.
+
 
 if __name__ == '__main__':
     main()

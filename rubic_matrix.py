@@ -629,7 +629,6 @@ def main():
     #                     if ((j+"'" == k) or (k+"'" == j)):
     #                         continue
     #                     yield "%s%s%s%s" % (i, j, k, m)
-
     # TODO: ipmlement one solve method of rubic cube
     # DONE: XYZ is a small space similar problem. It could help.
     # TODO: use these functinos to find out low level formula equivlent list.
@@ -639,6 +638,10 @@ def main():
     # group operator.
     # TODO: expand_d
     # TODO: group analysis hash value, and count mct.
+    # TODO: implement one way to solve.
+    # guess, exist (m, n), which makes any loop less than (m) element invovled,
+    # can be done in less than (n) steps.
+    # clearly, (20, 20) is one answer. It will help to limit
 
 
 if __name__ == '__main__':

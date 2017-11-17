@@ -326,7 +326,7 @@ class RubicMatrix(object):
         cnt = 0
         for fml in gen_n:
             try:
-                hash_20 = self.hash_matrix(self.eval_fml(fml))
+                hash_20 = self.hs(self.eval_fml(fml))
                 hash_12, hash_8 = hash_20.split("/")
                 # check_point = hash_8.split("_")[-1]
                 # if not "20" == check_point:
@@ -353,7 +353,7 @@ class RubicMatrix(object):
     def expand_d(self):
         pass
 
-    def loop_from_hash(self, matrix_hash):
+    def lp(self, matrix_hash):
         """
         input:
         '6_2_3_8b_1b_4_7_12b_5_9_11_10b/14b_16c_15_20b_18c_13b_19_17c'
@@ -418,7 +418,7 @@ class RubicMatrix(object):
         return lp_str
 
     def _status_d_from_loop(self, lp):
-        base_status_d = self._status_d_from_hash(self.hash_matrix(base))
+        base_status_d = self._status_d_from_hash(self.hs(base))
         lp_list = [s.split(".") for s in lp.split("/")]
         for sub_loop in lp_list:
             symb_1st = ''
@@ -470,7 +470,7 @@ class RubicMatrix(object):
             rlt_d[key] = "%s%s" % (rlt_num, rlt_pos)
         return rlt_d
 
-    def loop_operator(self, lp1, lp2):
+    def lo(self, lp1, lp2):
         sd1 = self._status_d_from_loop(lp1)
         sd2 = self._status_d_from_loop(lp2)
         sd_rlt = self._status_d_operator(sd1, sd2)
@@ -543,7 +543,7 @@ class RubicMatrix(object):
         operations.append(item_b)
         return len(operations)
 
-    def hash_matrix(self, matrix):
+    def hs(self, matrix):
         """
         f2: R'HR'HR2H'R'H'R'H'R2H
         f2 hash: 1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20
@@ -591,9 +591,9 @@ def main():
     print("f2: %s, %s steps." % (f2, s.steps(f2)))
     print("f3: %s, %s steps." % (f3, s.steps(f3)))
     ta = time.time()
-    print("f1 hash: %s" % (s.hash_matrix(s.eval_fml(f1))))
-    print("f2 hash: %s" % (s.hash_matrix(s.eval_fml(f2))))
-    print("f3 hash: %s" % (s.hash_matrix(s.eval_fml(f3))))
+    print("f1 hash: %s" % (s.hs(s.eval_fml(f1))))
+    print("f2 hash: %s" % (s.hs(s.eval_fml(f2))))
+    print("f3 hash: %s" % (s.hs(s.eval_fml(f3))))
     tb = time.time()
     print("spend %s s" % (float(tb - ta)))
     # def fml_from_count(self, cnt):

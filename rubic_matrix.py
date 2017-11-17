@@ -9,6 +9,7 @@ import numpy as np
 # import scipy as sp
 import cmath
 import time
+import re
 # import itertools
 
 
@@ -223,10 +224,18 @@ class RubicMatrix(object):
         self.d_8 = {}
         self.d_12 = {}
         self.d_20 = {}
+        self.lp_8 = {}
+        self.lp_12 = {}
+        self.lp_20 = {}
 
-    def fml_gen1(self):
+    def fml_gen2(self):
         # for i in self.fml:
-        for i in ["R"]:
+        b1 = ["R", "R'"]
+        b2 = ["U", "U'", "F", "F'", "B", "B'", "D", "D'"]
+        fm1 = b1
+        fm2 = ["%s%s" % (i, j) for i in b1 for j in b2]
+        fm = fm1 + fm2
+        for i in fm:
             yield i
 
     def gen_up(self, g):
@@ -317,11 +326,11 @@ class RubicMatrix(object):
         return True
 
     def gen_level(self, n):
-        if n > 1:
+        if n > 2:
             return self.gen_up(self.gen_level(n-1))
-        return self.fml_gen1()
+        return self.fml_gen2()
 
-    def fill_up_d(self, n):
+    def fill_hash_d(self, n):
         gen_n = self.gen_level(n)
         cnt = 0
         for fml in gen_n:
@@ -349,6 +358,42 @@ class RubicMatrix(object):
                 print(repr(e))
                 print(hash_20, fml)
         return cnt
+
+    def fill_lp_d(self, n, d20=True, d12=True, d8=True):
+        if not (d20 or d12 or d8):
+            print("not dictionary setted.")
+            return None
+        gen_n = self.gen_level(n)
+        cnt = 0
+        for fml in gen_n:
+            try:
+                lp_20 = self.lp(self.hs(self.eval_fml(fml)))
+                lp_12, lp_8 = lp_20.split("|")
+                # check_point = lp_8.split("_")[-1]
+                # if not "20" == check_point:
+                #     continue
+                # 1 / 24 situation need to be considered.
+                if d20:
+                    if lp_20 in self.d_20:
+                        self.lp_20[lp_20] = self.d_20[lp_20] + [fml]
+                    else:
+                        self.lp_20[lp_20] = [fml]
+                if d12:
+                    if lp_12 in self.d_12:
+                        self.lp_12[lp_12] = self.d_12[lp_12] + [fml]
+                    else:
+                        self.lp_12[lp_12] = [fml]
+                if d8:
+                    if lp_8 in self.d_8:
+                        self.lp_8[lp_8] = self.d_8[lp_8] + [fml]
+                    else:
+                        self.lp_8[lp_8] = [fml]
+                cnt += 1
+            except Exception as e:
+                print(repr(e))
+                print(lp_20, fml)
+        return cnt
+
 
     def expand_d(self):
         pass
@@ -383,6 +428,7 @@ class RubicMatrix(object):
         """
         tmp_d = {}
         key_seq = ["%s" % (int(i) + 1) for i in range(20)]
+        # here, use the order
         lp = []
         while (len(tmp_d) < 20):
             for key in key_seq:
@@ -390,6 +436,8 @@ class RubicMatrix(object):
                     continue
                 # print("#2, key %s" % (key))
                 val = status_d[key]
+                if ("13" == key):
+                    lp.append("|")
                 if (key == val):
                     # print("key=val, %s" % (key))
                     tmp_d[key] = ''
@@ -419,7 +467,8 @@ class RubicMatrix(object):
 
     def _status_d_from_loop(self, lp):
         base_status_d = self._status_d_from_hash(self.hs(base))
-        lp_list = [s.split(".") for s in lp.split("/")]
+        lp_list = [s.split(".") for s in lp.split("/")
+                   if not ("|" == s or "" == s)]
         for sub_loop in lp_list:
             symb_1st = ''
             place = ''
@@ -470,12 +519,21 @@ class RubicMatrix(object):
             rlt_d[key] = "%s%s" % (rlt_num, rlt_pos)
         return rlt_d
 
-    def lo(self, lp1, lp2):
+    def _lo(self, lp1, lp2):
         sd1 = self._status_d_from_loop(lp1)
         sd2 = self._status_d_from_loop(lp2)
         sd_rlt = self._status_d_operator(sd1, sd2)
         lp_rlt = self._loop_from_status_d(sd_rlt)
         return lp_rlt
+
+    def lo(self, lp_list):
+        rlt = None
+        for lp in lp_list:
+            if rlt is None:
+                rlt = lp
+                continue
+            rlt = self._lo(rlt, lp)
+        return rlt
 
     def check_cofflict(self, d):
         for key in d:
@@ -642,8 +700,10 @@ def main():
     # guess, exist (m, n), which makes any loop less than (m) element invovled,
     # can be done in less than (n) steps.
     # clearly, (20, 20) is one answer. It will help to limit
+    # TODO: finish fill_lp_d.
     # TODO: prove, ("R", "U") conbine, can not produce "4.2b.3b.1" alike sth.
     # TODO: prove, there can not be one/three angle element in any lp.
+    # TODO: use browser and js, instead of real rubic cube, support fml.
 
 
 if __name__ == '__main__':

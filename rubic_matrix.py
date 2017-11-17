@@ -583,7 +583,7 @@ class RubicMatrix(object):
 
 
 def main():
-    f1 = "R'U'2RUR'URURU2R'U'RU'R'"
+    f1 = "R'U'2RUR'URURU2R'U'RU'R'U'"
     f2 = "R'HR'HR2H'R'H'R'H'R2H"
     f3 = "HR2H'R'H'R'H'R2HR'HR'"
     s = RubicMatrix()
@@ -591,9 +591,9 @@ def main():
     print("f2: %s, %s steps." % (f2, s.steps(f2)))
     print("f3: %s, %s steps." % (f3, s.steps(f3)))
     ta = time.time()
-    print("f1 hash: %s" % (s.hs(s.eval_fml(f1))))
-    print("f2 hash: %s" % (s.hs(s.eval_fml(f2))))
-    print("f3 hash: %s" % (s.hs(s.eval_fml(f3))))
+    print("f1 lp: %s" % (s.lp(s.hs(s.eval_fml(f1)))))
+    print("f2 lp: %s" % (s.lp(s.hs(s.eval_fml(f2)))))
+    print("f3 lp: %s" % (s.lp(s.hs(s.eval_fml(f3)))))
     tb = time.time()
     print("spend %s s" % (float(tb - ta)))
     # def fml_from_count(self, cnt):
@@ -642,6 +642,8 @@ def main():
     # guess, exist (m, n), which makes any loop less than (m) element invovled,
     # can be done in less than (n) steps.
     # clearly, (20, 20) is one answer. It will help to limit
+    # TODO: prove, ("R", "U") conbine, can not produce "4.2b.3b.1" alike sth.
+    # TODO: prove, there can not be one/three angle element in any lp.
 
 
 if __name__ == '__main__':

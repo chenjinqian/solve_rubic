@@ -445,8 +445,8 @@ class RubikMatrix(object):
         '6.4.8b.12b.10b.9.5.1b/14b.16c.20b.17c.18c.13b'
         """
         status_d = self._status_d_from_hash(matrix_hash)
-        lp = self._loop_from_status_d(status_d)
-        return lp
+        loop = self._loop_from_status_d(status_d)
+        return loop
 
     def _status_d_from_hash(self, matrix_hash):
         d = {}
@@ -467,7 +467,7 @@ class RubikMatrix(object):
         tmp_d = {}
         key_seq = ["%s" % (int(i) + 1) for i in range(20)]
         # here, use the order
-        lp = []
+        loop = []
         while (len(tmp_d) < 20):
             for key in key_seq:
                 if key in tmp_d:
@@ -475,7 +475,7 @@ class RubikMatrix(object):
                 # print("#2, key %s" % (key))
                 val = status_d[key]
                 if ("13" == key):
-                    lp.append("|")
+                    loop.append("|")
                 if (key == val):
                     # print("key=val, %s" % (key))
                     tmp_d[key] = ''
@@ -499,8 +499,8 @@ class RubikMatrix(object):
                             key = "%s" % (val)
                         val = status_d[key]
                         # print("#3, val %s, key_next %s" % (val, key))
-                    lp.append(sub_loop)
-        lp_str = "/".join([".".join(i) for i in lp])
+                    loop.append(sub_loop)
+        lp_str = "/".join([".".join(i) for i in loop])
         return lp_str
 
     def _status_d_from_loop(self, lp):
@@ -566,11 +566,11 @@ class RubikMatrix(object):
 
     def lo(self, lp_list):
         rlt = None
-        for lp in lp_list:
+        for loop in lp_list:
             if rlt is None:
-                rlt = lp
+                rlt = loop
                 continue
-            rlt = self._lo(rlt, lp)
+            rlt = self._lo(rlt, loop)
         return rlt
 
     def check_cofflict(self, d):

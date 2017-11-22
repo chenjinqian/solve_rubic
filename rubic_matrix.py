@@ -185,9 +185,10 @@ s3 = R * u * R * U * R * U * R * u * r * u * r * R
 mys3 = R * U * U * r * u * R * u * r
 # too suppress too much zero after point
 np.set_printoptions(suppress=True)
-f22 = R*u*u*R*R*u*R*R*u*R*R*u*u*R
+# f22 = R*u*u*R*R*u*R*R*u*R*R*u*u*R
 # colomn will be slot, row as element.
-# Ur/Rr as CounterClock roatation.
+# Ur/Rr as CounterClock roatation,
+# right hand facing center.
 # r or u as two portation rotation.
 # alias
 # if operation number distrane is times of 3, then
@@ -394,7 +395,6 @@ class RubicMatrix(object):
                 print(lp_20, fml)
         return cnt
 
-
     def expand_d(self):
         pass
 
@@ -541,46 +541,44 @@ class RubicMatrix(object):
             if len(val) > 1:
                 yield (key, val)
 
-    def eval_fml(self, fml):
-        def fml_to_operation(fml):
-            operations = []
-            item_a = None
-            item_b = None
-            for item in fml:
-                item_a = item
-                if item_b is None:
-                    item_b = item_a
-                    continue
-                if item_a == "'":
-                    item_b = "%s%s" % (item_b, "r")
-                elif item_a == "2":
-                    operations.append(item_b)
-                else:
-                    operations.append(item_b)
-                    item_b = item_a
-            operations.append(item_b)
-            return operations
+    def fml_to_operation(self, fml):
+        operations = []
+        item_a = None
+        item_b = None
+        for item in fml:
+            item_a = item
+            if item_b is None:
+                item_b = item_a
+                continue
+            if item_a == "'":
+                item_b = "%s%s" % (item_b, "r")
+            elif item_a == "2":
+                operations.append(item_b)
+            else:
+                operations.append(item_b)
+                item_b = item_a
+        operations.append(item_b)
+        return operations
 
-        def eval_operation(operations):
-            """
-            evalue operation;
-            using left to right order.
-            """
-            elements = operations
-            mk = " * "
-            fs = []
-            for e in elements:
-                if not (fs == []):
-                    fs = fs + mk + e
-                else:
-                    fs = e
-            try:
-                matrix = eval(fs)
-                return matrix
-            except Exception as e:
-                print("#2, ERROR: %s" % (repr(e)))
-                return []
-        return eval_operation(fml_to_operation(fml))
+    def eval_fml(self, fml):
+        """
+        evalue operation;
+        using left to right order.
+        """
+        elements = self.fml_to_operation(fml)
+        mk = " * "
+        fs = []
+        for e in elements:
+            if not (fs == []):
+                fs = fs + mk + e
+            else:
+                fs = e
+        try:
+            matrix = eval(fs)
+            return matrix
+        except Exception as e:
+            print("#2, ERROR: %s" % (repr(e)))
+            return []
 
     def steps(self, fml):
         operations = []
@@ -694,7 +692,9 @@ def main():
     # or just reverse the formula
     # TODO: use reduced symbol caculation, not directerly matrix multiple,
     # group operator.
-    # TODO: expand_d
+    # TODO: expand_d, or zero point.
+    # TODO: zero point, can be done with help dictory of middle result,
+    # TODO: save space and speed up.
     # TODO: group analysis hash value, and count mct.
     # TODO: implement one way to solve.
     # guess, exist (m, n), which makes any loop less than (m) element invovled,

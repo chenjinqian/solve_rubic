@@ -4,7 +4,7 @@
 # email: 2012chenjinqian@gmail.com
 
 
-# matrix represent  rubic state and try to solve the best path .
+# matrix represent  rubik state and try to solve the best path .
 import numpy as np
 # import scipy as sp
 import cmath
@@ -208,7 +208,7 @@ e11 = Br
 e12 = Dr
 
 
-class RubicMatrix(object):
+class RubikMatrix(object):
     def __init__(self):
         """
         formula is like   R'U'2
@@ -642,7 +642,7 @@ def main():
     f1 = "R'U'2RUR'URURU2R'U'RU'R'U'"
     f2 = "R'HR'HR2H'R'H'R'H'R2H"
     f3 = "HR2H'R'H'R'H'R2HR'HR'"
-    s = RubicMatrix()
+    s = RubikMatrix()
     print("f1: %s, %s steps." % (f1, s.steps(f1)))
     print("f2: %s, %s steps." % (f2, s.steps(f2)))
     print("f3: %s, %s steps." % (f3, s.steps(f3)))
@@ -685,7 +685,7 @@ def main():
     #                     if ((j+"'" == k) or (k+"'" == j)):
     #                         continue
     #                     yield "%s%s%s%s" % (i, j, k, m)
-    # TODO: ipmlement one solve method of rubic cube
+    # TODO: ipmlement one solve method of rubik cube
     # DONE: XYZ is a small space similar problem. It could help.
     # TODO: use these functinos to find out low level formula equivlent list.
     # TODO: change right multiple to left multple, for easy to write reason.
@@ -703,7 +703,7 @@ def main():
     # TODO: finish fill_lp_d.
     # TODO: prove, ("R", "U") conbine, can not produce "4.2b.3b.1" alike sth.
     # TODO: prove, there can not be one/three angle element in any lp.
-    # TODO: use browser and js, instead of real rubic cube, support fml.
+    # TODO: use browser and js, instead of real rubik cube, support fml.
 
 
 if __name__ == '__main__':

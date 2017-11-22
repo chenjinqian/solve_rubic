@@ -9,7 +9,7 @@ import numpy as np
 # import scipy as sp
 import cmath
 import time
-import re
+# import re
 # import itertools
 
 
@@ -229,7 +229,114 @@ class RubicMatrix(object):
         self.lp_12 = {}
         self.lp_20 = {}
 
-    def fml_gen2(self):
+    def fill_hash_d(self, n):
+        gen_n = self.gen_level(n)
+        cnt = 0
+        for fml in gen_n:
+            try:
+                hash_20 = self.hs(self.eval_fml(fml))
+                hash_12, hash_8 = hash_20.split("/")
+                # check_point = hash_8.split("_")[-1]
+                # if not "20" == check_point:
+                #     continue
+                # 1 / 24 situation need to be considered.
+                if hash_20 in self.d_20:
+                    self.d_20[hash_20] = self.d_20[hash_20] + [fml]
+                else:
+                    self.d_20[hash_20] = [fml]
+                if hash_12 in self.d_12:
+                    self.d_12[hash_12] = self.d_12[hash_12] + [fml]
+                else:
+                    self.d_12[hash_12] = [fml]
+                if hash_8 in self.d_8:
+                    self.d_8[hash_8] = self.d_8[hash_8] + [fml]
+                else:
+                    self.d_8[hash_8] = [fml]
+                cnt += 1
+            except Exception as e:
+                print(repr(e))
+                print(hash_20, fml)
+        return cnt
+
+    def fill_lp_d(self, n, d20=True, d12=True, d8=True):
+        if not (d20 or d12 or d8):
+            print("not dictionary setted.")
+            return None
+        gen_n = self.gen_level(n)
+        cnt = 0
+        for fml in gen_n:
+            try:
+                lp_20 = self.lp(self.hs(self.eval_fml(fml)))
+                lp_12, lp_8 = lp_20.split("|")
+                # check_point = lp_8.split("_")[-1]
+                # if not "20" == check_point:
+                #     continue
+                # 1 / 24 situation need to be considered.
+                if d20:
+                    if lp_20 in self.d_20:
+                        self.lp_20[lp_20] = self.d_20[lp_20] + [fml]
+                    else:
+                        self.lp_20[lp_20] = [fml]
+                if d12:
+                    if lp_12 in self.d_12:
+                        self.lp_12[lp_12] = self.d_12[lp_12] + [fml]
+                    else:
+                        self.lp_12[lp_12] = [fml]
+                if d8:
+                    if lp_8 in self.d_8:
+                        self.lp_8[lp_8] = self.d_8[lp_8] + [fml]
+                    else:
+                        self.lp_8[lp_8] = [fml]
+                cnt += 1
+            except Exception as e:
+                print(repr(e))
+                print(lp_20, fml)
+        return cnt
+
+    def hs(self, matrix):
+        """
+        f2: R'HR'HR2H'R'H'R'H'R2H
+        f2 hash: 1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20
+        """
+        def position(matrix):
+            """
+            should transform before get shape.
+            """
+            p_019 = list(matrix.T.nonzero()[1])
+            p_120 = [i + 1 for i in p_019]
+            return p_120
+
+        def phase(matrix):
+            m201 = c_20_1 * matrix
+            clx_angle = list(m201.A1)
+            # print("clx_angle %s" % (clx_angle))
+            phase_pi = [cmath.phase(i) for i in clx_angle]
+            digt = []
+            for i in phase_pi:
+                if i > 0.1:
+                    digt.append('b')
+                elif i < -0.1:
+                    digt.append('c')
+                else:
+                    digt.append('a')
+            return digt
+
+        pos_pha_list = []
+        for pos, pha in zip(position(matrix), phase(matrix)):
+            if "a" == "%s" % (pha):
+                pos_pha_list.append("%s" % (pos))
+            else:
+                pos_pha_list.append("%s%s" % (pos, pha))
+        rlt = "%s/%s" % ("_".join(pos_pha_list[:12]),
+                         "_".join(pos_pha_list[12:]))
+        return rlt
+
+    def gen_level(self, n):
+        if n > 2:
+            return self._gen_up(self.gen_level(n-1))
+        return self._fml_gen2()
+
+    def _fml_gen2(self):
         # for i in self.fml:
         b1 = ["R", "R'"]
         b2 = ["U", "U'", "F", "F'", "B", "B'", "D", "D'"]
@@ -239,7 +346,7 @@ class RubicMatrix(object):
         for i in fm:
             yield i
 
-    def gen_up(self, g):
+    def _gen_up(self, g):
         return ("%s%s" % (i, j) for i in g
                 for j in self.fml if self.check_fml_valid(i, j))
 
@@ -325,75 +432,6 @@ class RubicMatrix(object):
             print("%s ERROR" % (repr(e)))
             print(item_j, item_i, items)
         return True
-
-    def gen_level(self, n):
-        if n > 2:
-            return self.gen_up(self.gen_level(n-1))
-        return self.fml_gen2()
-
-    def fill_hash_d(self, n):
-        gen_n = self.gen_level(n)
-        cnt = 0
-        for fml in gen_n:
-            try:
-                hash_20 = self.hs(self.eval_fml(fml))
-                hash_12, hash_8 = hash_20.split("/")
-                # check_point = hash_8.split("_")[-1]
-                # if not "20" == check_point:
-                #     continue
-                # 1 / 24 situation need to be considered.
-                if hash_20 in self.d_20:
-                    self.d_20[hash_20] = self.d_20[hash_20] + [fml]
-                else:
-                    self.d_20[hash_20] = [fml]
-                if hash_12 in self.d_12:
-                    self.d_12[hash_12] = self.d_12[hash_12] + [fml]
-                else:
-                    self.d_12[hash_12] = [fml]
-                if hash_8 in self.d_8:
-                    self.d_8[hash_8] = self.d_8[hash_8] + [fml]
-                else:
-                    self.d_8[hash_8] = [fml]
-                cnt += 1
-            except Exception as e:
-                print(repr(e))
-                print(hash_20, fml)
-        return cnt
-
-    def fill_lp_d(self, n, d20=True, d12=True, d8=True):
-        if not (d20 or d12 or d8):
-            print("not dictionary setted.")
-            return None
-        gen_n = self.gen_level(n)
-        cnt = 0
-        for fml in gen_n:
-            try:
-                lp_20 = self.lp(self.hs(self.eval_fml(fml)))
-                lp_12, lp_8 = lp_20.split("|")
-                # check_point = lp_8.split("_")[-1]
-                # if not "20" == check_point:
-                #     continue
-                # 1 / 24 situation need to be considered.
-                if d20:
-                    if lp_20 in self.d_20:
-                        self.lp_20[lp_20] = self.d_20[lp_20] + [fml]
-                    else:
-                        self.lp_20[lp_20] = [fml]
-                if d12:
-                    if lp_12 in self.d_12:
-                        self.lp_12[lp_12] = self.d_12[lp_12] + [fml]
-                    else:
-                        self.lp_12[lp_12] = [fml]
-                if d8:
-                    if lp_8 in self.d_8:
-                        self.lp_8[lp_8] = self.d_8[lp_8] + [fml]
-                    else:
-                        self.lp_8[lp_8] = [fml]
-                cnt += 1
-            except Exception as e:
-                print(repr(e))
-                print(lp_20, fml)
-        return cnt
 
     def expand_d(self):
         pass
@@ -598,44 +636,6 @@ class RubicMatrix(object):
                 item_b = item_a
         operations.append(item_b)
         return len(operations)
-
-    def hs(self, matrix):
-        """
-        f2: R'HR'HR2H'R'H'R'H'R2H
-        f2 hash: 1_2_3_4_5b_6b_7_8_9_10_11_12/13_14_15_16_17_18_19_20
-        """
-        def position(matrix):
-            """
-            should transform before get shape.
-            """
-            p_019 = list(matrix.T.nonzero()[1])
-            p_120 = [i + 1 for i in p_019]
-            return p_120
-
-        def phase(matrix):
-            m201 = c_20_1 * matrix
-            clx_angle = list(m201.A1)
-            # print("clx_angle %s" % (clx_angle))
-            phase_pi = [cmath.phase(i) for i in clx_angle]
-            digt = []
-            for i in phase_pi:
-                if i > 0.1:
-                    digt.append('b')
-                elif i < -0.1:
-                    digt.append('c')
-                else:
-                    digt.append('a')
-            return digt
-
-        pos_pha_list = []
-        for pos, pha in zip(position(matrix), phase(matrix)):
-            if "a" == "%s" % (pha):
-                pos_pha_list.append("%s" % (pos))
-            else:
-                pos_pha_list.append("%s%s" % (pos, pha))
-        rlt = "%s/%s" % ("_".join(pos_pha_list[:12]),
-                         "_".join(pos_pha_list[12:]))
-        return rlt
 
 
 def main():

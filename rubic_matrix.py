@@ -47,7 +47,7 @@ BASE = [
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1, c],
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, 1],
     ]
-# up reverse basic-representatio
+# up reverse basic-representation
 Ur_raw = [
     [c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
     [c, c, 1, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c],
@@ -136,6 +136,7 @@ Yr_raw = [
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, a, c, c, c, c, c],
     [c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, b, c],
     ]
+
 C_20_1 = [1 for i in range(20)]
 c_20_1 = np.matrix(C_20_1)
 base = np.matrix(BASE)
@@ -228,6 +229,7 @@ class RubikMatrix(object):
         self.lp_8 = {}
         self.lp_12 = {}
         self.lp_20 = {}
+        self.s_fml_d = self.make_simple_operator_d()
 
     def fill_hash_d(self, n):
         gen_n = self.gen_level(n)
@@ -598,7 +600,7 @@ class RubikMatrix(object):
         operations.append(item_b)
         return operations
 
-    def eval_fml(self, fml):
+    def eval_fml_v1(self, fml):
         """
         evalue operation;
         using left to right order.
@@ -636,6 +638,26 @@ class RubikMatrix(object):
                 item_b = item_a
         operations.append(item_b)
         return len(operations)
+
+
+    def eval_fml_simple(self, fml):
+        if type(fml) == list:
+            name_list = fml
+        else:
+            name_list = self.fml_to_operation(fml)
+        loop_list = [self.s_fml_d[i] for i in name_list]
+        return self.lo(loop_list)
+
+    def make_simple_operator_d(self):
+        """
+        init simple_operator_d
+        """
+        names = ["R","Rr","L","Lr","U","Ur","D","Dr","F","Fr","B","Br"]
+        full_operators = [R,Rr,L,Lr,U,Ur,D,Dr,F,Fr,B,Br]
+        simple_operator_d = {}
+        for name, one_op in zip(names, full_operators):
+            simple_operator_d[name] = self._loop_from_status_d(self._status_d_from_hash(self.hs(one_op)))
+        return simple_operator_d
 
 
 def main():

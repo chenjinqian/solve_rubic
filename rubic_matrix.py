@@ -575,6 +575,22 @@ class RubikMatrix(object):
             rlt = self._lo(rlt, loop)
         return rlt
 
+    def _o(self, lp1, lp2):
+        sd1 = self._status_d_from_hash(lp1)
+        sd2 = self._status_d_from_hash(lp2)
+        sd_rlt = self._status_d_operator(sd1, sd2)
+        hs_rlt = self._hash_from_status_d(sd_rlt)
+        return hs_rlt
+
+    def o(self, lp_list):
+        rlt = None
+        for hs in lp_list:
+            if rlt is None:
+                rlt = hs
+                continue
+            rlt = self._o(rlt, hs)
+        return rlt
+
     def check_cofflict(self, d):
         for key in d:
             val = d[key]
@@ -639,7 +655,6 @@ class RubikMatrix(object):
         operations.append(item_b)
         return len(operations)
 
-
     def eval_fml_simple(self, fml):
         if type(fml) == list:
             name_list = fml
@@ -661,19 +676,54 @@ class RubikMatrix(object):
 
 
 def main():
-    f1 = "R'U'2RUR'URURU2R'U'RU'R'U'"
-    f2 = "R'HR'HR2H'R'H'R'H'R2H"
-    f3 = "HR2H'R'H'R'H'R2HR'HR'"
     s = RubikMatrix()
-    print("f1: %s, %s steps." % (f1, s.steps(f1)))
-    print("f2: %s, %s steps." % (f2, s.steps(f2)))
-    print("f3: %s, %s steps." % (f3, s.steps(f3)))
-    ta = time.time()
-    print("f1 lp: %s" % (s.lp(s.hs(s.eval_fml(f1)))))
-    print("f2 lp: %s" % (s.lp(s.hs(s.eval_fml(f2)))))
-    print("f3 lp: %s" % (s.lp(s.hs(s.eval_fml(f3)))))
-    tb = time.time()
-    print("spend %s s" % (float(tb - ta)))
+    le = "|"
+    import random
+    rlt = {}
+    acc = 1
+    cnt = 0
+    fml = "RR'"
+    lp = s.eval_fml_simple(fml)
+    steps = ["R", "U"]
+    while acc >= 0:
+        # print(fml)
+        # m = random.choice(s.fml)
+        m = steps[cnt%2]
+        cnt += 1
+        # m = "RU"
+        # if m not in ("R", "R'", "U", "U'"):
+        #     continue
+        fml += m
+        lp_m = s.eval_fml_simple(m)
+        lp = s._lo(lp, lp_m)
+        lp_2 = s._lo(lp, lp)
+        print("%s        \r"%(lp), end="")
+        # if lp_2.split("|")[0] == "":
+        if lp_2 == "|":
+            if lp not in rlt:
+                print("\n")
+                print(lp)
+                print(fml)
+                rlt[lp] = ""
+            acc -= 1
+            fml = "RR'"
+            lp = s.eval_fml_simple(fml)
+    # print(rlt)
+    # RU: 5.1/8b.2b/4.3/|/16b.13c/20c.14b/17b.15c
+    return rlt
+    # f1 = "R'U'2RUR'URURU2R'U'RU'R'U'"
+    # f2 = "R'HR'HR2H'R'H'R'H'R2H"
+    # f3 = "HR2H'R'H'R'H'R2HR'HR'"
+    # s = RubikMatrix()
+    # print("f1: %s, %s steps." % (f1, s.steps(f1)))
+    # print("f2: %s, %s steps." % (f2, s.steps(f2)))
+    # print("f3: %s, %s steps." % (f3, s.steps(f3)))
+    # ta = time.time()
+    # print("f1 lp: %s" % (s.lp(s.hs(s.eval_fml(f1)))))
+    # print("f2 lp: %s" % (s.lp(s.hs(s.eval_fml(f2)))))
+    # print("f3 lp: %s" % (s.lp(s.hs(s.eval_fml(f3)))))
+    # tb = time.time()
+    # print("spend %s s" % (float(tb - ta)))
     # def fml_from_count(self, cnt):
     #     """
     #     cnt is int
